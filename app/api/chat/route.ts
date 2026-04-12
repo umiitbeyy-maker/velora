@@ -1,31 +1,54 @@
-import Groq from "groq-sdk";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server'
+import Groq from 'groq-sdk'
+import { supabase } from '@/lib/supabase'
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
-export async function POST(request: NextRequest) {
-  try {
-    const { message } = await request.json();
-    
-    const completion = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
-      messages: [
-        {
-          role: "system",
-          content: "Sen Velora-nin AI agentisen. Gozellik salonlari ucun isleyirsen. Musteri ile onun dilinde danisirsan. Rezervasiya ucun: ad, tarix, saat, xidmet novu toplayirsan. Xidmetler: Sac kesimi 20 AZN, Boyama 50 AZN, Maniku 15 AZN, Pedikur 20 AZN, Uz baximi 30 AZN. Is saatlari: 09:00-20:00, Bazarertesi-Senbe."
-        },
-        {
-          role: "user",
-          content: message
-        }
-      ],
-      max_tokens: 500,
-    });
+export async function POST(req: NextRequest) {
+  const { message, sessionId, businessSlug } = await req.json()
 
-    const text = completion.choices[0]?.message?.content || "Xeta bas verdi";
-    return NextResponse.json({ message: text });
-  } catch (error) {
-    console.error("Groq API error:", error);
-    return NextResponse.json({ error: "Xeta bas verdi" }, { status: 500 });
-  }
+  const { data: business } = await supabase
+    .from('businesses')
+    .select('*')
+    .eq('slug', businessSlug || 'glamour-beauty')
+    .single()
+
+  const systemPrompt = business
+    ? `You are an AI assistant for ${business.name}.
+       Industry: ${business.industry}.
+       Description: ${business.description}.
+       Services: ${JSON.stringify(business.services)}.
+       Help customers, answer questions, book appointments.
+       If customer wants to book: collect name, contact, service, preferred time.`
+    : 'You are a helpful business assistant.'
+
+  const { data: conv } = await supabase
+    .from('conversations')
+    .select('messages')
+    .eq('session_id', sessionId)
+    .single()
+
+  const history = conv?.messages || []
+  const updatedHistory = [...history, { role: 'user', content: message }]
+
+  const response = await groq.chat.completions.create({
+    model: 'llama-3.3-70b-versatile',
+    messages: [
+      { role: 'system', content: systemPrompt },
+      ...updatedHistory
+    ],
+    max_tokens: 500,
+  })
+
+  const reply = response.choices[0].message.content
+  const finalHistory = [...updatedHistory, { role: 'assistant', content: reply }]
+
+  await supabase.from('conversations').upsert({
+    session_id: sessionId,
+    business_id: business?.id,
+    messages: finalHistory,
+    updated_at: new Date().toISOString()
+  }, { onConflict: 'session_id' })
+
+  return NextResponse.json({ reply, business })
 }
