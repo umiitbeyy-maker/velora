@@ -1,145 +1,66 @@
 'use client'
-import { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 
-export default function DashboardPage() {
-  const params = useParams()
-  const slug = params.slug as string
-  const [business, setBusiness] = useState<any>(null)
-  const [conversations, setConversations] = useState<any[]>([])
-  const [appointments, setAppointments] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('overview')
-
-  useEffect(() => {
-    fetch('/api/businesses')
-      .then(r => r.json())
-      .then(async data => {
-        const biz = data.businesses?.find((b: any) => b.slug === slug)
-        if (biz) {
-          setBusiness(biz)
-          const [convRes, apptRes] = await Promise.all([
-            fetch(`/api/dashboard/conversations?businessId=${biz.id}`),
-            fetch(`/api/dashboard/appointments?businessId=${biz.id}`)
-          ])
-          setConversations((await convRes.json()).conversations || [])
-          setAppointments((await apptRes.json()).appointments || [])
-        }
-        setLoading(false)
-      })
-  }, [slug])
-
-  if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <p style={{ color: '#888' }}>Loading...</p>
-    </div>
-  )
-
-  const totalMessages = conversations.reduce((sum: number, c: any) => sum + (c.messages?.length || 0), 0)
-
+export default function LandingPage() {
+  const router = useRouter()
   return (
-    <div style={{ minHeight: '100vh', background: '#0a0a0a', color: '#fff' }}>
-      <div style={{ padding: '16px 24px', borderBottom: '1px solid #1a1a1a', display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#a855f7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700' }}>
-          {business?.name?.[0]}
+    <div style={{ minHeight: '100vh', background: '#06060a', color: '#fff', fontFamily: 'system-ui, sans-serif' }}>
+      <nav style={{ padding: '20px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+        <div style={{ fontSize: '22px', fontWeight: '800', background: 'linear-gradient(135deg, #c084fc, #f472b6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Velora</div>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button onClick={() => router.push('/demo/glamour-beauty')} style={{ padding: '9px 20px', background: 'transparent', color: '#999', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', fontSize: '14px', cursor: 'pointer' }}>Live Demo</button>
+          <button onClick={() => router.push('/onboarding')} style={{ padding: '9px 22px', background: 'linear-gradient(135deg, #9333ea, #ec4899)', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>Get Started Free →</button>
         </div>
-        <div>
-          <div style={{ fontWeight: '600' }}>{business?.name}</div>
-          <div style={{ fontSize: '12px', color: '#888' }}>Admin Dashboard</div>
+      </nav>
+      <div style={{ textAlign: 'center', padding: '120px 24px 80px' }}>
+        <h1 style={{ fontSize: 'clamp(44px, 7vw, 80px)', fontWeight: '800', lineHeight: '1.06', letterSpacing: '-3px', marginBottom: '28px' }}>
+          Your business,{' '}
+          <span style={{ background: 'linear-gradient(135deg, #c084fc 0%, #f472b6 50%, #fb923c 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>always on.</span>
+        </h1>
+        <p style={{ fontSize: '18px', color: '#666', maxWidth: '500px', margin: '0 auto 48px', lineHeight: '1.75' }}>Give your business an AI agent that talks to customers, books appointments, and closes deals — around the clock, in any language.</p>
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginBottom: '48px' }}>
+          <button onClick={() => router.push('/onboarding')} style={{ padding: '15px 40px', background: 'linear-gradient(135deg, #9333ea, #ec4899)', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 12px 40px rgba(147,51,234,0.4)' }}>Launch My AI Agent →</button>
+          <button onClick={() => router.push('/demo/glamour-beauty')} style={{ padding: '15px 36px', background: 'rgba(255,255,255,0.04)', color: '#ccc', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '16px', cursor: 'pointer' }}>▶ Watch it work</button>
         </div>
-        <a href={`/demo/${slug}`} target="_blank"
-          style={{ marginLeft: 'auto', padding: '8px 16px', background: '#a855f7', color: '#fff', borderRadius: '8px', fontSize: '13px', textDecoration: 'none' }}>
-          Open AI Agent →
-        </a>
+        <div style={{ display: 'flex', gap: '28px', justifyContent: 'center' }}>
+          {['Free to start', 'No credit card', '2-min setup', 'Any language'].map((t, i) => <span key={i} style={{ fontSize: '13px', color: '#444' }}>✓ {t}</span>)}
+        </div>
       </div>
-
-      <div style={{ padding: '24px', maxWidth: '1100px', margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '28px' }}>
+      <div style={{ padding: '60px 40px', borderTop: '1px solid rgba(255,255,255,0.04)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '40px', textAlign: 'center' }}>
+          {[{ value: '2 min', label: 'Average setup time' }, { value: '24/7', label: 'Agent availability' }, { value: '∞', label: 'Businesses supported' }].map((s, i) => (
+            <div key={i}>
+              <div style={{ fontSize: '48px', fontWeight: '800', letterSpacing: '-2px', background: 'linear-gradient(135deg, #c084fc, #f472b6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{s.value}</div>
+              <div style={{ fontSize: '14px', color: '#555', marginTop: '6px' }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div style={{ padding: '80px 40px', maxWidth: '900px', margin: '0 auto' }}>
+        <h2 style={{ textAlign: 'center', fontSize: '40px', fontWeight: '800', letterSpacing: '-1.5px', marginBottom: '56px' }}>Built for real business</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px' }}>
           {[
-            { label: 'Conversations', value: conversations.length, color: '#a855f7' },
-            { label: 'Messages', value: totalMessages, color: '#3b82f6' },
-            { label: 'Appointments', value: appointments.length, color: '#10b981' },
-            { label: 'Services', value: business?.services?.length || 0, color: '#f59e0b' },
-          ].map((stat, i) => (
-            <div key={i} style={{ background: '#111', border: '1px solid #222', borderRadius: '12px', padding: '20px' }}>
-              <div style={{ fontSize: '28px', fontWeight: '700', color: stat.color }}>{stat.value}</div>
-              <div style={{ fontSize: '13px', color: '#888', marginTop: '4px' }}>{stat.label}</div>
+            { icon: '🧠', title: 'Llama 3.3 70B', desc: 'World-class AI that understands nuance, context, and your customers' },
+            { icon: '⚡', title: '2-Minute Launch', desc: 'No developers. No complexity. Your AI agent is live instantly.' },
+            { icon: '🌍', title: 'Any Language', desc: 'Azerbaijani, Russian, Arabic — AI responds perfectly.' },
+            { icon: '📅', title: 'Auto Booking', desc: 'AI captures booking details and fills your calendar automatically.' },
+            { icon: '📊', title: 'Live Dashboard', desc: 'Every conversation and appointment visible in real time.' },
+            { icon: '🔗', title: 'One-Line Embed', desc: 'Paste one script tag. AI agent appears on any website.' },
+          ].map((f, i) => (
+            <div key={i} style={{ padding: '24px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px' }}>
+              <div style={{ fontSize: '22px', marginBottom: '14px' }}>{f.icon}</div>
+              <div style={{ fontWeight: '700', fontSize: '15px', marginBottom: '8px', color: '#f0f0f0' }}>{f.title}</div>
+              <div style={{ fontSize: '13px', color: '#555', lineHeight: '1.7' }}>{f.desc}</div>
             </div>
           ))}
         </div>
-
-        <div style={{ display: 'flex', gap: '4px', marginBottom: '20px', background: '#111', borderRadius: '10px', padding: '4px', width: 'fit-content' }}>
-          {['overview', 'conversations', 'appointments'].map(tab => (
-            <button key={tab} onClick={() => setActiveTab(tab)}
-              style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: '500', textTransform: 'capitalize', fontFamily: 'inherit',
-                background: activeTab === tab ? '#a855f7' : 'transparent',
-                color: activeTab === tab ? '#fff' : '#888' }}>
-              {tab}
-            </button>
-          ))}
-        </div>
-
-        {activeTab === 'overview' && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            <div style={{ background: '#111', border: '1px solid #222', borderRadius: '12px', padding: '20px' }}>
-              <div style={{ fontWeight: '600', marginBottom: '16px' }}>Recent Conversations</div>
-              {conversations.slice(0, 5).map((c: any, i: number) => (
-                <div key={i} style={{ padding: '10px 0', borderBottom: '1px solid #1a1a1a', fontSize: '13px' }}>
-                  <div style={{ color: '#ccc' }}>Session: {c.session_id?.slice(0, 8)}...</div>
-                  <div style={{ color: '#888', fontSize: '12px' }}>{c.messages?.length || 0} messages</div>
-                </div>
-              ))}
-              {conversations.length === 0 && <p style={{ color: '#555', fontSize: '13px' }}>No conversations yet</p>}
-            </div>
-            <div style={{ background: '#111', border: '1px solid #222', borderRadius: '12px', padding: '20px' }}>
-              <div style={{ fontWeight: '600', marginBottom: '16px' }}>Services</div>
-              {business?.services?.map((s: any, i: number) => (
-                <div key={i} style={{ padding: '10px 0', borderBottom: '1px solid #1a1a1a', display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-                  <span style={{ color: '#ccc' }}>{s.name}</span>
-                  <span style={{ color: '#a855f7' }}>${s.price}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'conversations' && (
-          <div style={{ background: '#111', border: '1px solid #222', borderRadius: '12px', padding: '20px' }}>
-            {conversations.map((c: any, i: number) => (
-              <div key={i} style={{ padding: '14px', marginBottom: '8px', background: '#0a0a0a', borderRadius: '8px', border: '1px solid #1a1a1a' }}>
-                <div style={{ fontSize: '13px', color: '#888', marginBottom: '8px' }}>Session: {c.session_id?.slice(0, 12)}...</div>
-                {c.messages?.slice(-2).map((m: any, j: number) => (
-                  <div key={j} style={{ fontSize: '13px', padding: '6px 10px', borderRadius: '6px', marginBottom: '4px',
-                    background: m.role === 'user' ? '#1a0a2e' : '#1a1a1a', color: m.role === 'user' ? '#c084fc' : '#ccc' }}>
-                    <span style={{ fontSize: '11px', color: '#555', marginRight: '6px' }}>{m.role}:</span>
-                    {m.content?.slice(0, 100)}{m.content?.length > 100 ? '...' : ''}
-                  </div>
-                ))}
-              </div>
-            ))}
-            {conversations.length === 0 && <p style={{ color: '#555' }}>No conversations yet.</p>}
-          </div>
-        )}
-
-        {activeTab === 'appointments' && (
-          <div style={{ background: '#111', border: '1px solid #222', borderRadius: '12px', padding: '20px' }}>
-            {appointments.map((a: any, i: number) => (
-              <div key={i} style={{ padding: '14px', marginBottom: '8px', background: '#0a0a0a', borderRadius: '8px', border: '1px solid #1a1a1a', display: 'flex', justifyContent: 'space-between' }}>
-                <div>
-                  <div style={{ fontWeight: '500' }}>{a.customer_name || 'Unknown'}</div>
-                  <div style={{ fontSize: '13px', color: '#888' }}>{a.service}</div>
-                </div>
-                <div style={{ fontSize: '12px', padding: '4px 10px', borderRadius: '20px', height: 'fit-content',
-                  background: a.status === 'confirmed' ? '#052e16' : '#1a0a0a',
-                  color: a.status === 'confirmed' ? '#10b981' : '#f59e0b' }}>
-                  {a.status}
-                </div>
-              </div>
-            ))}
-            {appointments.length === 0 && <p style={{ color: '#555' }}>No appointments yet.</p>}
-          </div>
-        )}
       </div>
+      <div style={{ textAlign: 'center', padding: '100px 24px', background: 'radial-gradient(ellipse 60% 80% at 50% 50%, rgba(139,92,246,0.08), transparent)' }}>
+        <h2 style={{ fontSize: 'clamp(36px, 5vw, 60px)', fontWeight: '800', letterSpacing: '-2px', marginBottom: '16px' }}>Your AI agent is waiting.</h2>
+        <p style={{ color: '#555', fontSize: '17px', marginBottom: '44px' }}>2 minutes from now, your business never sleeps.</p>
+        <button onClick={() => router.push('/onboarding')} style={{ padding: '18px 60px', background: 'linear-gradient(135deg, #9333ea, #ec4899)', color: '#fff', border: 'none', borderRadius: '14px', fontSize: '18px', fontWeight: '800', cursor: 'pointer', boxShadow: '0 16px 60px rgba(147,51,234,0.5)' }}>Launch My AI Agent →</button>
+      </div>
+      <div style={{ textAlign: 'center', padding: '24px', borderTop: '1px solid rgba(255,255,255,0.05)', color: '#333', fontSize: '13px' }}>© 2025 Velora · AI Agent Platform</div>
     </div>
   )
 }
